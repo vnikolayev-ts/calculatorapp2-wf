@@ -1,4 +1,3 @@
-// src/App.js
 import React, { useState } from 'react';
 import Display from './components/Display';
 import Button from './components/Button';
@@ -12,7 +11,6 @@ const App = () => {
       setInput('');
     } else if (label === '=') {
       try {
-        // Replace '×' and '÷' with '*' and '/' for evaluation
         const expression = input.replace(/×/g, '*').replace(/÷/g, '/');
         // eslint-disable-next-line no-eval
         const result = eval(expression);
