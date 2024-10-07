@@ -1,25 +1,48 @@
-import logo from './logo.svg';
+// src/App.js
+import React, { useState } from 'react';
+import Display from './components/Display';
+import Button from './components/Button';
 import './App.css';
 
-function App() {
+const App = () => {
+  const [input, setInput] = useState('');
+
+  const handleClick = (label) => {
+    if (label === 'C') {
+      setInput('');
+    } else if (label === '=') {
+      try {
+        // Replace '×' and '÷' with '*' and '/' for evaluation
+        const expression = input.replace(/×/g, '*').replace(/÷/g, '/');
+        // eslint-disable-next-line no-eval
+        const result = eval(expression);
+        setInput(result.toString());
+      } catch {
+        setInput('Error');
+      }
+    } else {
+      setInput(input + label);
+    }
+  };
+
+  const buttons = [
+    '7', '8', '9', '÷',
+    '4', '5', '6', '×',
+    '1', '2', '3', '-',
+    '0', '.', '=', '+',
+    'C'
+  ];
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="calculator">
+      <Display value={input} />
+      <div className="buttons">
+        {buttons.map((btn, idx) => (
+          <Button key={idx} label={btn} onClick={handleClick} />
+        ))}
+      </div>
     </div>
   );
-}
+};
 
 export default App;
