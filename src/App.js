@@ -32,7 +32,8 @@ const App = () => {
   ];
 
   return (
-    <div className="calculator">
+      <div className="calculator">
+      <p className="instance-ip">Instance IP: {window.location.hostname}</p>
       <Display value={input} />
       <div className="buttons">
         {buttons.map((btn, idx) => (
