@@ -13,7 +13,7 @@ jobs:
       - name: Build Docker Image
         run: |
           docker build -t "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest .
-      
+
       - name: Docker Login
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
@@ -57,4 +57,8 @@ jobs:
 
       - name: Clean Up SSH Key File (optional)
         run: |
-          rm meinPrivateKey
+          if [ -f ~/.ssh/meinPrivateKey ]; then
+              rm ~/.ssh/meinPrivateKey
+          else
+              echo "meinPrivateKey does not exist, skipping deletion."
+          fi
