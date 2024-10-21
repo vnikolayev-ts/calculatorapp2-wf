@@ -28,7 +28,7 @@ jobs:
           chmod 600 ~/.ssh/meinPrivateKey
           ssh-keyscan -H ${{secrets.EC2_IP}} >> ~/.ssh/known_hosts
 
-      - name: SSH Connection to EC2
+      - name: SSH Connection to EC2 instance
         run: |
           ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
               sudo yum update -y
