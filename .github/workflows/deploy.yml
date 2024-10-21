@@ -10,10 +10,16 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: build repo
+      - name: Build Docker Image
         run: |
-          sudo npm install --force
-          sudo npm run build
+          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest
+      
+      - name: Docker Login
+        run: echo "${{secrets.DOCKERHUB_TOKEN}}" | docker login -u "${{secrets.DOCKERHUB_USERNAME}}" --password-stdin
+
+      - name: Docker push
+        run: |
+          docker push "${{secrets.DOCKERHUB_USERNAME}}"/calculatorapp:latest
 
       - name: Set up SSH
         run: |
@@ -22,24 +28,23 @@ jobs:
           chmod 600 ~/.ssh/meinPrivateKey
           ssh-keyscan -H ${{secrets.EC2_IP}} >> ~/.ssh/known_hosts
 
-      - name: SSH Connection to EC2 instance
+      - name: SSH Connection to EC2
         run: |
           ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
               sudo yum update -y
               sudo yum upgrade -y
-              sudo yum install -y nodejs
-              sudo npm install -g serve
+              sudo systemctl start docker
+              sudo usermod -aG docker ec2-user
+              docker pull "${{secrets.DOCKERHUB_USERNAME}}"/calculatorapp:latest
           ENDSSH
-      - name: Print SCP Command
-        run: echo "scp -i ~/.ssh/meinPrivateKey -r build ec2-user@${{secrets.EC2_IP}}:/home/ec2-user/build"
-     
-      - name: Copy build to EC2
-        run: scp -i ~/.ssh/meinPrivateKey -r build ec2-user@${{secrets.EC2_IP}}:/home/ec2-user/build
 
-      - name: Start Calculator on EC2 instance
+
+      - name: Start Docker Container on EC2 instance
         run: |
             ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
-                nohup sudo serve -l 80 -s ~/build > /dev/null 2>&1 &
+                docker run -d -p 80:3000 --name calculatorapp "${{secrets.DOCKERHUB_USERNAME}}"/calculatorapp:latest
             ENDSSH
 
-      
+      - name: Clean Up SSH Key File (optional)
+        run: |
+          rm meinPrivateKey
