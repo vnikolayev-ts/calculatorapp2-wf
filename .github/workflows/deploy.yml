@@ -30,7 +30,9 @@ jobs:
               sudo yum install -y nodejs
               sudo npm install -g serve
           ENDSSH
-
+      - name: Print SCP Command
+        run: echo "scp -i ~/.ssh/meinPrivateKey -r build ec2-user@${{secrets.EC2_IP}}:/home/ec2-user/build"
+     
       - name: Copy build to EC2
         run: scp -i ~/.ssh/meinPrivateKey -r build ec2-user@${{secrets.EC2_IP}}:/home/ec2-user/build
 
