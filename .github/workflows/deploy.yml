@@ -10,7 +10,7 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v2
 
-      - name: build repo
+      - name: Build repo
         run: |
           npm install
           npm run build
@@ -22,14 +22,15 @@ jobs:
           chmod 600 ~/.ssh/meinPrivateKey
           ssh-keyscan -H ${{secrets.EC2_IP}} >> ~/.ssh/known_hosts
 
-      - name: SSH Connection to EC2
+      - name: SSH Connection to EC2 and Prepare Directory
         run: |
           ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
               sudo yum update -y
               sudo yum upgrade -y
               sudo yum install -y nodejs
               sudo npm install -g serve
-              sudo mkdir -p -v /home/ec2-user/build  # Ensure build directory exists
+              mkdir -p /home/ec2-user/build  # Ensure the build directory exists
+              ls -ld /home/ec2-user/build    # Log directory details for debugging
           ENDSSH
 
       - name: Copy build to EC2
@@ -37,6 +38,6 @@ jobs:
 
       - name: Start Calculator on EC2
         run: |
-            ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
-                sudo serve -l 80 -s ~/build
-            ENDSSH
+          ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
+              sudo serve -l 80 -s ~/build
+          ENDSSH
