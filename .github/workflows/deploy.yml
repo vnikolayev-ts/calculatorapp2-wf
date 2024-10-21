@@ -12,8 +12,8 @@ jobs:
 
       - name: build repo
         run: |
-          npm install
-          npm run build
+          sudo npm install --force
+          sudo npm run build
 
       - name: Set up SSH
         run: |
