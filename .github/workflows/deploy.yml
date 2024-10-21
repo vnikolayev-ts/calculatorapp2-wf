@@ -1,8 +1,6 @@
-#yaml
 name: Deploy on EC2
 
-on: 
-  push:
+on: push
 
 jobs:
   deploy:
@@ -14,8 +12,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build -t "${{secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest .
-
+          docker build -t "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest .
+      
       - name: Docker Login
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
@@ -26,7 +24,7 @@ jobs:
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/meinPrivateKey
+          echo "${{ secrets.SSH_PRIVATE_KEY}}" > ~/.ssh/meinPrivateKey
           chmod 600 ~/.ssh/meinPrivateKey
           ssh-keyscan -H ${{ secrets.EC2_IP }} >> ~/.ssh/known_hosts
 
@@ -42,12 +40,21 @@ jobs:
               sudo docker pull "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest
           ENDSSH
 
-      - name: Start Docker Container on EC2 instance
+      - name: Stop and Remove Existing Docker Container
         run: |
           ssh -i ~/.ssh/meinPrivateKey ec2-user@${{ secrets.EC2_IP }} << 'ENDSSH'
-              docker run -d -p 80:3000 --name calculatorapp "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest
+              if [ $(docker ps -q -f name=calculatorapp) ]; then
+                  docker stop calculatorapp
+                  docker rm calculatorapp
+              fi
           ENDSSH
+
+      - name: Start Docker Container on EC2 instance
+        run: |
+            ssh -i ~/.ssh/meinPrivateKey ec2-user@${{ secrets.EC2_IP }} << 'ENDSSH'
+                docker run -d -p 80:3000 --name calculatorapp "${{ secrets.DOCKERHUB_USERNAME }}"/calculatorapp:latest
+            ENDSSH
 
       - name: Clean Up SSH Key File (optional)
         run: |
-          rm -f ~/.ssh/meinPrivateKey
+          rm meinPrivateKey
