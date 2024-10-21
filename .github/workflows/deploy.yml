@@ -36,7 +36,7 @@ jobs:
       - name: Copy build to EC2
         run: scp -i ~/.ssh/meinPrivateKey -r build ec2-user@${{secrets.EC2_IP}}:/home/ec2-user/build
 
-      - name: Start Calculator on EC2
+      - name: Start Calculator on EC2 instance
         run: |
             ssh -i ~/.ssh/meinPrivateKey ec2-user@${{secrets.EC2_IP}} << 'ENDSSH'
                 nohup sudo serve -l 80 -s ~/build > /dev/null 2>&1 &
